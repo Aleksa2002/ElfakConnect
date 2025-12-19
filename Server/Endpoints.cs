@@ -1,8 +1,8 @@
 using System;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Server.Common;
 using Server.Authentication.Endpoints;
+using Server.Common.Api;
 
 namespace Server;
 

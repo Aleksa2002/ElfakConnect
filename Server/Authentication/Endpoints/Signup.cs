@@ -1,8 +1,7 @@
 using System;
-using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using Server.Common;
+using Server.Authentication.Services;
+using Server.Common.Api;
 using Server.Common.Api.Extensions;
 
 namespace Server.Authentication.Endpoints;
@@ -26,42 +25,48 @@ public class Signup : IEndpoint
         }
     }
 
-    private static async Task<Results<Ok<Response>, ProblemHttpResult>> Handle(Request request, IMongoDatabase database, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<Response>, ProblemHttpResult>> Handle(
+        Request request,
+        IMongoDatabase database,
+        IPasswordHasher passwordHasher,
+        CancellationToken cancellationToken)
     {
         var usersCollection = database.GetCollection<User>(User.CollectionName);
-        var userExists = await usersCollection
-            .Find(x => x.Username == request.Username || x.Email == request.Email)
+
+        var emailExists = await usersCollection
+            .Find(x => x.Email == request.Email)
             .AnyAsync(cancellationToken);
 
-        if (userExists)
+        if (emailExists)
         {
-            var problemDetails = new ProblemDetails
-            {
-                Title = "Validation Error",
-                Detail = "Username or email already in use",
-                Status = StatusCodes.Status400BadRequest,
-                Type = "https://example.com/probs/validation"
-            };
+            var problemDetails = AuthErrors.EmailNotUnique(request.Email).ToProblemDetails();
             return TypedResults.Problem(problemDetails);
-        }
+        }    
+        
+        var usernameExists = await usersCollection
+            .Find(x => x.Username == request.Username)
+            .AnyAsync(cancellationToken);
 
-        await usersCollection.InsertOneAsync(new User
+        if (usernameExists)
+        {
+            var problemDetails = AuthErrors.UsernameNotUnique(request.Username).ToProblemDetails();
+            return TypedResults.Problem(problemDetails);
+        }    
+        
+        var newUser = new User
         {
             Username = request.Username,
-            PasswordHash = request.Password, // TODO: Hash password
+            PasswordHash = passwordHasher.Hash(request.Password),
             Email = request.Email
-        }, cancellationToken: cancellationToken);
-
-        var createdUser = await usersCollection
-            .Find(x => x.Username == request.Username)
-            .FirstAsync(cancellationToken);
+        };
+        await usersCollection.InsertOneAsync(newUser, cancellationToken: cancellationToken);
 
         return TypedResults.Ok(new Response
         (
-            createdUser.Id.ToString(),
-            createdUser.Username,
-            createdUser.Email,
-            createdUser.CreatedAt
+            newUser.Id.ToString(),
+            newUser.Username,
+            newUser.Email,
+            newUser.CreatedAt
         ));
     }
 }

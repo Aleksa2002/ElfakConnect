@@ -1,6 +1,6 @@
 using System;
 
-namespace Server.Common;
+namespace Server.Common.Api;
 
 public interface IEndpoint
 {
