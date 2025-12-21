@@ -9,7 +9,7 @@ public static class MongoDBServiceExtensions
         this IServiceCollection services, 
         IConfiguration configuration)
     {
-        var mongoSettings = configuration.GetSection("MongoDB").Get<MongoDBSettings>()
+        var mongoSettings = configuration.GetSection("MongoDB").Get<MongoDBOptions>()
             ?? throw new InvalidOperationException("MongoDb settings not found in configuration");
 
         services.AddSingleton<IMongoClient>(sp =>

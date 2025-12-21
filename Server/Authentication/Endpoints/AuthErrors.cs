@@ -13,4 +13,7 @@ public static class AuthErrors
 
     public static readonly Error InvalidCredentials =
         Error.Unauthorized("Auth.InvalidCredentials", "The provided credentials are invalid.");
+
+    public static readonly Error InvalidRefreshToken =
+        Error.Unauthorized("Auth.InvalidRefreshToken", "The provided refresh token is invalid.");
 }

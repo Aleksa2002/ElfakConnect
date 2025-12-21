@@ -2,7 +2,7 @@ using System;
 
 namespace Server.Data;
 
-public class MongoDBSettings
+public class MongoDBOptions
 {
     public required string ConnectionURI { get; set; }
     public required string DatabaseName { get; set; }

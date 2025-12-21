@@ -34,7 +34,9 @@ public static class Endpoints
             .WithTags("Authentication");
             
         endpoints.MapPublicGroup()
-            .MapEndpoint<Signup>();
+            .MapEndpoint<Register>()
+            .MapEndpoint<Login>()
+            .MapEndpoint<Refresh>();
     }
     
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

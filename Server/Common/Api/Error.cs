@@ -2,13 +2,18 @@ namespace Server.Common.Api;
 
 public enum ErrorType
 {
-    Validation = 0,
-    NotFound = 1,
-    Conflict = 2,
-    Unauthorized = 3,
+    Failure = 0,
+    Validation = 1,
+    NotFound = 2,
+    Conflict = 3,
+    Unauthorized = 4,
 }
 public record Error
 {
+    public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Failure);
+    public static readonly Error NullValue = new("Error.NullValue", "The specified result value is null.", ErrorType.Failure);
+
+    public static implicit operator Result(Error error) => Result.Failure(error);
     private Error(string code, string description, ErrorType errorType)
     {
         Code = code;
@@ -20,15 +25,14 @@ public record Error
     public string Description { get; }
     public ErrorType Type { get; }
 
+    public static Error Failure(string code, string description) =>
+        new(code, description, ErrorType.Failure);
     public static Error Validation(string code, string description) =>
         new(code, description, ErrorType.Validation);
-
     public static Error NotFound(string code, string description) =>
         new(code, description, ErrorType.NotFound);
-
     public static Error Conflict(string code, string description) =>
         new(code, description, ErrorType.Conflict);
-
     public static Error Unauthorized(string code, string description) =>
         new(code, description, ErrorType.Unauthorized);
 }

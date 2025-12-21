@@ -6,7 +6,6 @@ namespace Server.Data.Models;
 public interface IEntity
 {
     public ObjectId Id { get; set; }
-
     static abstract string CollectionName { get; }
 }
 
