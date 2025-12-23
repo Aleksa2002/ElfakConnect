@@ -7,10 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.17.1" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Graph" Version="5.99.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.79.2" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.5.2" />
@@ -20,7 +23,7 @@
   <ItemGroup>
     <Folder Include="Common/Api/Exceptions/" />
     <Folder Include="Common/Api/Filters/" />
-    <Folder Include="Data/Models/" />
+    <Folder Include="Users/" />
   </ItemGroup>
 
 </Project>

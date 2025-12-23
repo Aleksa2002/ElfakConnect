@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using Server.Authentication.Services;
 using Server.Common.Api;
 using Server.Common.Api.Extensions;
+using Server.Data.Repositories;
 
 namespace Server.Authentication.Endpoints;
 
@@ -26,18 +27,24 @@ public class Login : IEndpoint
 
     private static async Task<IResult> Handle(
         Request request,
-        IAuthenticationService authenticationService,
-        CancellationToken cancellationToken)
+        IUserRepository userRepository,
+        IPasswordHasher passwordHasher,
+        IAccessTokenService accessTokenService
+        )
     {
-        var userResult = await authenticationService.Login(request.Email, request.Password, cancellationToken);
-        
-        return userResult.Match(
-            user => Results.Ok(new Response(
-                user.Id.ToString(),
-                user.Username,
-                user.Email,
-                user.CreatedAt)),
-            error => Results.Problem(error.ToProblemDetails()));
-    }
+        var user = await userRepository.FindByEmailAsync(request.Email);
 
+        if (user == null || !passwordHasher.Verify(request.Password, user.PasswordHash))
+        {
+            return Results.Problem(AuthErrors.InvalidCredentials);
+        }
+
+        await accessTokenService.GenerateBothTokensAndSetCookies(user);
+
+        return Results.Ok(new Response(
+            user.Id.ToString(),
+            user.Username,
+            user.Email,
+            user.CreatedAtUtc));
+    }
 }

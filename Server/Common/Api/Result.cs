@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Server.Common.Api;
 
@@ -6,12 +7,8 @@ public class Result
 {
     protected Result(bool isSuccess, Error error)
     {
-        if (isSuccess && error != Error.None)
-        {
-            throw new InvalidOperationException();
-        }
-
-        if (!isSuccess && error == Error.None)
+        if ((isSuccess && error != Error.None )||
+             (!isSuccess && error == Error.None))
         {
             throw new InvalidOperationException();
         }
@@ -20,9 +17,9 @@ public class Result
         Error = error;
     }
 
+    public Error Error { get; }
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    public Error Error { get; }
 
     public static Result Success() => new(true, Error.None);
     public static Result Failure(Error error) => new(false, error); 
@@ -37,7 +34,6 @@ public class Result<T> : Result
     {
         _value = value;
     }
-    
     public T Value => IsSuccess
         ? _value!
         : throw new InvalidOperationException("The value of a failure result can not be accessed.");

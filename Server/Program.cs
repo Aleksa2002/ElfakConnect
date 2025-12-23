@@ -1,7 +1,6 @@
 global using Server.Data;
 global using Server.Data.Models;
 global using FluentValidation;
-global using Microsoft.AspNetCore.Http.HttpResults;
 using Server;
 using Scalar.AspNetCore;
 using Server.Authentication.Services;
@@ -10,6 +9,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using MongoDB.Driver;
+using Server.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,14 +27,20 @@ builder.Services.AddProblemDetails(o =>
 });
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 
 builder.Services.AddOpenApi();
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 builder.Services.AddMongoDB(builder.Configuration);
 
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<IAccessTokenProvider, AccessTokenProvider>();
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IAccessTokenService, AccessTokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IVerificationService, VerificationService>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IVerificationTokenRepository, VerificationTokenRepository>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -68,6 +75,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<IMongoDatabase>();
+    MongoDBIndexInitializer.Initialize(db);
+}
 
 if (app.Environment.IsDevelopment())
 {

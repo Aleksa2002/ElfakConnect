@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
+using Server.Common.Api.Extensions;
+
 namespace Server.Common.Api;
 
 public enum ErrorType
@@ -13,7 +16,7 @@ public record Error
     public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Failure);
     public static readonly Error NullValue = new("Error.NullValue", "The specified result value is null.", ErrorType.Failure);
 
-    public static implicit operator Result(Error error) => Result.Failure(error);
+    public static implicit operator ProblemDetails(Error error) => error.ToProblemDetails();
     private Error(string code, string description, ErrorType errorType)
     {
         Code = code;

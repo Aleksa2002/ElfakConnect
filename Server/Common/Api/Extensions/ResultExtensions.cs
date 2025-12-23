@@ -20,4 +20,12 @@ public static class ResultExtensions
     {
         return result.IsSuccess ? onSuccess(result.Value) : onFailure(result.Error);
     }
+
+    public static Task<TOut> MatchAsync<TValue, TOut>(
+        this Result<TValue> result,
+        Func<TValue, Task<TOut>> onSuccess,
+        Func<Error, Task<TOut>> onFailure)
+    {
+        return result.IsSuccess ? onSuccess(result.Value) : onFailure(result.Error);
+    }
 }

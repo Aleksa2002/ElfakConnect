@@ -17,7 +17,7 @@ public static class MongoDBServiceExtensions
             return new MongoClient(mongoSettings.ConnectionURI);
         });
 
-        services.AddScoped<IMongoDatabase>(sp =>
+        services.AddSingleton<IMongoDatabase>(sp =>
         {
             var client = sp.GetRequiredService<IMongoClient>();
             return client.GetDatabase(mongoSettings.DatabaseName);

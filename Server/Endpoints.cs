@@ -37,6 +37,11 @@ public static class Endpoints
             .MapEndpoint<Register>()
             .MapEndpoint<Login>()
             .MapEndpoint<Refresh>();
+
+        endpoints.MapAuthorizedGroup()
+            .MapEndpoint<Me>()
+            .MapEndpoint<VerifyEmail>();
+
     }
     
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

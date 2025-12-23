@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using Server.Authentication.Services;
 using Server.Common.Api;
 using Server.Common.Api.Extensions;
+using Server.Data.Repositories;
 
 namespace Server.Authentication.Endpoints;
 
@@ -14,7 +15,7 @@ public class Register : IEndpoint
         .WithRequestValidation<Request>();
 
     public record Request(string Username, string Password, string Email);
-    public record Response(string Id, string Username, string Email, DateTime CreatedAt);
+    public record Response(string Id, string Username, string Email, DateTime CreatedAtUtc);
     public class RequestValidator : AbstractValidator<Request>
     {
         public RequestValidator()
@@ -31,22 +32,30 @@ public class Register : IEndpoint
 
     private static async Task<IResult> Handle(
         Request request,
-        IAuthenticationService authenticationService,
+        IUserRepository userRepository,
+        IVerificationService verificationService,
+        IPasswordHasher passwordHasher,
+        IEmailService emailService,
         CancellationToken cancellationToken)
     {
-
-        var userResult = await authenticationService.Register(
+        var userResult = await userRepository.CreateAsync(
             request.Username,
-            request.Password,
             request.Email,
-            cancellationToken);
-        
-        return userResult.Match(
-            user => Results.Ok(new Response(
-                user.Id.ToString(),
-                user.Username,
-                user.Email,
-                user.CreatedAt)),
-            error => Results.Problem(error.ToProblemDetails()));
+            passwordHasher.Hash(request.Password));
+
+        if (!userResult.IsSuccess)
+        {
+            return Results.Problem(userResult.Error);
+        }
+        var user = userResult.Value;
+
+        var code = await verificationService.CreateCode(user.Id);
+        await emailService.SendVerificationEmailAsync(user, code);
+
+        return Results.Ok(new Response(
+            user.Id.ToString(),
+            user.Username,
+            user.Email,
+            user.CreatedAtUtc));
     }
 }
