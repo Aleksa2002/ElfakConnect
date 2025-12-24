@@ -1,5 +1,6 @@
 using System;
 using System.Security.Cryptography;
+using Server.Authentication.Interfaces;
 
 namespace Server.Authentication.Services;
 

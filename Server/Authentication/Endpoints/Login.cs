@@ -1,9 +1,8 @@
 using System;
-using MongoDB.Driver;
-using Server.Authentication.Services;
-using Server.Common.Api;
-using Server.Common.Api.Extensions;
-using Server.Data.Repositories;
+using Server.Common;
+using Server.Common.Extensions;
+using Server.Data.Interfaces;
+using Server.Authentication.Interfaces;
 
 namespace Server.Authentication.Endpoints;
 

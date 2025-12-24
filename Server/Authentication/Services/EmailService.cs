@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Options;
+using Server.Authentication.Interfaces;
 
 namespace Server.Authentication.Services;
 

@@ -21,8 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common/Api/Exceptions/" />
-    <Folder Include="Common/Api/Filters/" />
     <Folder Include="Users/" />
   </ItemGroup>
 

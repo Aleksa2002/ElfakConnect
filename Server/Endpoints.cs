@@ -2,7 +2,7 @@ using System;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Server.Authentication.Endpoints;
-using Server.Common.Api;
+using Server.Common;
 
 namespace Server;
 

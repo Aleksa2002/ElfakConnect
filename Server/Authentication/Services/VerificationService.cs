@@ -1,8 +1,8 @@
 using System;
 using MongoDB.Bson;
-using Server.Common.Api;
-using Server.Common.Api.Extensions;
-using Server.Data.Repositories;
+using Server.Common;
+using Server.Data.Interfaces;
+using Server.Authentication.Interfaces;
 
 namespace Server.Authentication.Services;
 

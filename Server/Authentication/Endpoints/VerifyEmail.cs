@@ -1,9 +1,8 @@
 using System;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Server.Authentication.Services;
-using Server.Common.Api;
-using Server.Common.Api.Extensions;
+using Server.Common;
+using Server.Common.Extensions;
+using Server.Authentication.Interfaces;
 
 namespace Server.Authentication.Endpoints;
 

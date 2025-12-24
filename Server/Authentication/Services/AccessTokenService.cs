@@ -6,8 +6,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
-using Server.Common.Api;
-using Server.Data.Repositories;
+using Server.Common;
+using Server.Data.Interfaces;
+using Server.Authentication.Interfaces;
 
 namespace Server.Authentication.Services;
 
