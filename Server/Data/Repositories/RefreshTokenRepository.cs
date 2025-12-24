@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Server.Data.Interfaces;
 
 namespace Server.Data.Repositories;
 
