@@ -95,7 +95,7 @@ public class AccessTokenService(
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.EmailVerified, user.IsVerified.ToString().ToLower())
+                new Claim("is_verified", user.IsVerified.ToString().ToLower())
             ]),
             Expires = DateTime.UtcNow.AddMinutes(jwtOptions.Value.AccessTokenLifeTimeMinutes),
             Issuer = jwtOptions.Value.Issuer,

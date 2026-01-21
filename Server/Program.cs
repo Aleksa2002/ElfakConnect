@@ -14,8 +14,6 @@ using Server.Authentication.Interfaces;
 using Server.Data.Interfaces;
 using Server.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +26,7 @@ builder.Services.AddProblemDetails(o =>
         ctx.ProblemDetails.Extensions.TryAdd("requestId", ctx.HttpContext.TraceIdentifier);
         Activity? activity = ctx.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity;
         ctx.ProblemDetails.Extensions.TryAdd("traceId", activity?.Id);
-
+        ctx.ProblemDetails.Extensions.TryAdd("success", false);
     };
 });
 
@@ -74,13 +72,14 @@ builder.Services.AddAuthentication(options =>
 
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
-    options.Scope.Add("profile");
-    options.Scope.Add("email");
+    options.ResponseType = "code";
+    options.MapInboundClaims = false;
+
 }
 ).AddJwtBearer(options =>
 {
-    var jwtOptions = builder.Configuration.GetSection("Jwt")
-        .Get<JwtOptions>() ?? throw new InvalidOperationException("JWT options are not configured properly.");
+    var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
+        ?? throw new InvalidOperationException("JWT options are not configured properly.");
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -97,10 +96,16 @@ builder.Services.AddAuthentication(options =>
         {
             context.Token = context.Request.Cookies["ACCESS_TOKEN"];
             return Task.CompletedTask;
-        }
+        },
     };
 });
-builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("RequireVerified", policy =>
+        policy.RequireClaim("is_verified", "true"))
+    .AddPolicy("RequireOnboarded", policy =>
+        policy.RequireClaim("is_onboarded", "true"));
+
 
 builder.Services.AddHttpContextAccessor();
 
@@ -124,37 +129,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapEndpoints();
-
-app.MapGet("/api/account/login/microsoft", ([FromQuery] string returnUrl, [FromServices] LinkGenerator linkGenerator,
-    HttpContext context) =>
-{
-    var redirectUri = linkGenerator.GetPathByName(context, "MicrosoftLoginCallback") + $"?returnUrl={returnUrl}";
-    var properties = new AuthenticationProperties
-    {
-        RedirectUri = redirectUri
-    };
-
-    return Results.Challenge(properties, new[] { "Microsoft" });
-});
-
-app.MapGet("/api/account/login/microsoft/callback", async ([FromQuery] string returnUrl,
-    HttpContext context) =>
-{
-    var result = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-    if (!result.Succeeded)
-    {
-        return Results.Unauthorized();
-    }
-
-    foreach (var claim in result.Principal.Claims)
-    {
-        Console.WriteLine($"{claim.Type}: {claim.Value}");
-    }
-
-    return Results.Redirect(returnUrl);
-
-}).WithName("MicrosoftLoginCallback");
 
 app.UseExceptionHandler();
 

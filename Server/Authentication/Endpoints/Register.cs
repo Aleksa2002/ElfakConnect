@@ -1,5 +1,4 @@
 using System;
-using MongoDB.Driver;
 using Server.Common;
 using Server.Common.Extensions;
 using Server.Data.Interfaces;
@@ -14,17 +13,18 @@ public class Register : IEndpoint
         .WithSummary("Regesters a new user")
         .WithRequestValidation<Request>();
 
-    public record Request(string Username, string Password, string Email);
-    public record Response(string Id, string Username, string Email, DateTime CreatedAtUtc);
+    public record Request(string Email, string Password);
+    public record Response(string Id, string Email);
     public class RequestValidator : AbstractValidator<Request>
     {
         public RequestValidator()
         {
-            RuleFor(x => x.Username)
-            .NotEmpty()
-            .Length(3, 20)
-            .Matches("^[a-zA-Z0-9_]+$")
-            .WithMessage("Username can only contain alphanumeric characters and underscores");
+            // RuleFor(x => x.Username)
+            // .NotEmpty().WithMessage("Username is required")
+            // .MinimumLength(3).WithMessage("Username must be at least 3 characters long")
+            // .MaximumLength(20).WithMessage("Username must be at most 20 characters long")
+            // .Matches("^[a-zA-Z0-9_]+$")
+            // .WithMessage("Username can only contain letters, numbers, and underscores");
             RuleFor(x => x.Email).ElfakEmail();
             RuleFor(x => x.Password).Password();
         }
@@ -34,28 +34,30 @@ public class Register : IEndpoint
         Request request,
         IUserRepository userRepository,
         IVerificationService verificationService,
+        IAccessTokenService accessTokenService,
         IPasswordHasher passwordHasher,
         IEmailService emailService,
         CancellationToken cancellationToken)
     {
         var userResult = await userRepository.CreateAsync(
-            request.Username,
             request.Email,
-            passwordHasher.Hash(request.Password));
+            passwordHash: passwordHasher.Hash(request.Password));
 
         if (!userResult.IsSuccess)
         {
-            return Results.Problem(userResult.Error);
+            return ApiResponse.Problem(userResult.Error);
         }
         var user = userResult.Value;
 
         var code = await verificationService.CreateCode(user.Id);
-        await emailService.SendVerificationEmailAsync(user, code);
+        
+        await Task.WhenAll(
+            emailService.SendVerificationEmailAsync(user, code),
+            accessTokenService.GenerateBothTokensAndSetCookies(user));
 
-        return Results.Ok(new Response(
+
+        return ApiResponse.Ok(new Response(
             user.Id.ToString(),
-            user.Username,
-            user.Email,
-            user.CreatedAtUtc));
+            user.Email));
     }
 }

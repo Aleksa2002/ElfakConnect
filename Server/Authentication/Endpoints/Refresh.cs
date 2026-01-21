@@ -11,8 +11,6 @@ public class Refresh : IEndpoint
         .MapGet("/refresh", Handle)
         .WithSummary("Refreshes access tokens");
 
-    public record Response(string Id, string Username, string Email, DateTime CreatedAt);
-
     private static async Task<IResult> Handle(
         IAccessTokenService accessTokenService,
         HttpContext httpContext,
@@ -22,7 +20,7 @@ public class Refresh : IEndpoint
         
         if (string.IsNullOrEmpty(refreshToken))
         {
-            return Results.Problem(AuthErrors.MissingRefreshToken);
+            return ApiResponse.Problem(AuthErrors.MissingRefreshToken);
         }
 
         var userResult = await accessTokenService.VerifyAndRevokeRefreshToken(refreshToken);
@@ -31,12 +29,8 @@ public class Refresh : IEndpoint
             async (user) =>
             {
                 await accessTokenService.GenerateBothTokensAndSetCookies(user);
-                return Results.Ok(new Response(
-                    user.Id.ToString(),
-                    user.Username,
-                    user.Email,
-                    user.CreatedAtUtc));
+                return ApiResponse.Ok();
             },
-            error => Task.FromResult(Results.Problem(error)));
+            error => Task.FromResult(ApiResponse.Problem(error)));
     }
 }

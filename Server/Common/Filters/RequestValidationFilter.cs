@@ -7,8 +7,6 @@ public class RequestValidationFilter<TRequest>(IValidator<TRequest>? validator =
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
-        var requestName = typeof(TRequest).FullName;
-
         if (validator is null)
         {
             return await next(context);

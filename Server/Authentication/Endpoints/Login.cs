@@ -14,7 +14,7 @@ public class Login : IEndpoint
         .WithRequestValidation<Request>();
 
     public record Request(string Email, string Password);
-    public record Response(string Id, string Username, string Email, DateTime CreatedAt);
+    public record Response(string Id, string Username, string Email, DateTime CreatedAtUtc);
     public class RequestValidator : AbstractValidator<Request>
     {
         public RequestValidator()
@@ -28,21 +28,27 @@ public class Login : IEndpoint
         Request request,
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        IAccessTokenService accessTokenService
-        )
+        IAccessTokenService accessTokenService)
     {
         var user = await userRepository.FindByEmailAsync(request.Email);
 
-        if (user == null || !passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (user == null ||
+         string.IsNullOrEmpty(user.PasswordHash) ||
+         !string.IsNullOrEmpty(user.MicrosoftId))
         {
-            return Results.Problem(AuthErrors.InvalidCredentials);
+            return ApiResponse.Problem(AuthErrors.InvalidLoginMethod);
+        }
+
+        if (!passwordHasher.Verify(user.PasswordHash, request.Password))
+        {
+            return ApiResponse.Problem(AuthErrors.InvalidCredentials);
         }
 
         await accessTokenService.GenerateBothTokensAndSetCookies(user);
 
-        return Results.Ok(new Response(
+        return ApiResponse.Ok(new Response(
             user.Id.ToString(),
-            user.Username,
+            user.Username!,
             user.Email,
             user.CreatedAtUtc));
     }

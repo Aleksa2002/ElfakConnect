@@ -3,6 +3,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Server.Authentication.Endpoints;
 using Server.Common;
+using Server.Authentication.Endpoints.Microsoft;
+using Server.Users.Endpoints;
 
 namespace Server;
 
@@ -26,6 +28,7 @@ public static class Endpoints
             .WithOpenApi();
 
         endpoints.MapAuthenticationEndpoints();
+        endpoints.MapUsersEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -34,14 +37,26 @@ public static class Endpoints
             .WithTags("Authentication");
             
         endpoints.MapPublicGroup()
-            .MapEndpoint<Register>()
             .MapEndpoint<Login>()
-            .MapEndpoint<Refresh>();
+            .MapEndpoint<Register>()
+            .MapEndpoint<LoginMicrosoft>()
+            .MapEndpoint<LoginMicrosoftCallback>()
+            .MapEndpoint<RegisterMicrosoftCallback>()
+            .MapEndpoint<RegisterMicrosoft>()
+            .MapEndpoint<Refresh>();    
 
         endpoints.MapAuthorizedGroup()
-            .MapEndpoint<Me>()
-            .MapEndpoint<VerifyEmail>();
+            .MapEndpoint<Verify>()
+            .MapEndpoint<CompleteOnboarding>();
+    }
 
+     private static void MapUsersEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/users")
+            .WithTags("Users");
+
+        endpoints.MapAuthorizedGroup()
+            .MapEndpoint<GetCurrentUser>();
     }
     
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

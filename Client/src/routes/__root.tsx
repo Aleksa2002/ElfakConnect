@@ -1,20 +1,31 @@
-import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import type { QueryClient } from "@tanstack/react-query";
+import {
+  HeadContent,
+  Outlet,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
+import type { AuthContext } from "@/context/auth";
+import { getCurrentUserQueryOptions } from "@/query-options/get-current-user-query-options";
 
-const RootLayout = () => (
-  <>
-    <div className="p-2 flex gap-2">
-      <Link to="/" className="[&.active]:font-bold">
-        Home
-      </Link>{" "}
-      <Link to="/about" className="[&.active]:font-bold">
-        About
-      </Link>
-    </div>
-    <hr />
-    <Outlet />
-    <TanStackRouterDevtools />
-  </>
-);
+type RouterContext = {
+  queryClient: QueryClient;
+  auth: AuthContext;
+};
 
-export const Route = createRootRoute({ component: RootLayout });
+export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async ({ context: { auth, queryClient } }) => {
+    const user = await queryClient.ensureQueryData(
+      getCurrentUserQueryOptions(),
+    );
+    auth.setUser(user);
+  },
+
+  component: () => (
+    <>
+      <HeadContent />
+      <div className="flex flex-col flex-1 min-h-screen">
+        <Outlet />
+      </div>
+    </>
+  ),
+});

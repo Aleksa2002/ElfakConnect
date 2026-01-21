@@ -22,6 +22,7 @@ public class VerificationTokenRepository(IMongoDatabase database) : IVerificatio
             CodeHash = Convert.ToBase64String(hash)
         };
         await verificationTokenCollection.InsertOneAsync(token);
+        
         return token;
     }
     public async Task<VerificationToken?> FindByCodeAndUserIdAsync(string code, string userId)

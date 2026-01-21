@@ -37,14 +37,8 @@ public class Result<T> : Result
     public T Value => IsSuccess
         ? _value!
         : throw new InvalidOperationException("The value of a failure result can not be accessed.");
-    public static Result<T> Create(T? value)
-    {
-        return value is not null 
-            ? Success(value) 
-            : Failure<T>(Error.NullValue);
-    }
 
-    public static implicit operator Result<T>(T? value) => Create(value);
+    public static implicit operator Result<T>(T value) => Success(value);
     public static implicit operator Result<T>(Error error) => Failure<T>(error);
     public static Result<T> Success(T value) => new(value, true, Error.None);
 }

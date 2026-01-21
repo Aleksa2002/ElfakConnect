@@ -6,26 +6,32 @@ using Server.Data.Interfaces;
 
 namespace Server.Authentication.Endpoints;
 
-public class Me : IEndpoint
+public class CompleteOnboarding : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapGet("/me", Handle)
-        .WithSummary("Gets the current user");
+        .MapPost("/complete-onboarding", Handle)
+        .WithSummary("Completes the onboarding process for a user");
 
+    public record Request(string Username);
     public record Response(string Id, string Username, string Email, DateTime CreatedAt);
+    
     private static async Task<IResult> Handle(
+        Request request,
         ClaimsPrincipal claimsPrincipal,
         IUserRepository userRepository)
     {
         var userId = claimsPrincipal.GetUserId();
         var user = await userRepository.FindByIdAsync(userId);
 
-        return user != null ?
-            Results.Ok(new Response(
-                user.Id.ToString(),
-                user.Username,
-                user.Email,
-                user.CreatedAtUtc)) :
-            Results.Problem(AuthErrors.InvalidAccessToken);
+        if (user == null)
+        {
+            return ApiResponse.Problem(AuthErrors.InvalidCredentials);
+        }
+
+        return ApiResponse.Ok(new Response(
+            user.Id.ToString(),
+            user.Username!,
+            user.Email,
+            user.CreatedAtUtc));
     }
 }

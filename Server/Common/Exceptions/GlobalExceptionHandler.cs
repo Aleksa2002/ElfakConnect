@@ -23,6 +23,8 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
                 Title = $"An unhandled exception occurred: {exception.GetType().Name}",
                 Status = httpContext.Response.StatusCode,
                 Detail = exception.Message,
+                Extensions =
+                { ["errorCode"] = ErrorCodes.SYS_INTERNAL_ERROR }
             }
         });
     }

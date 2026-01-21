@@ -16,7 +16,10 @@
     "utils": "@/lib/utils",
     "ui": "@/components/ui",
     "lib": "@/lib",
-    "hooks": "@/hooks"
+    "hooks": "@/hooks",
+    "schemas": "@/schemas",
+    "types": "@/types",
+    "query-options": "@/query-options"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

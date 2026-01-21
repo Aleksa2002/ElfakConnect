@@ -47,6 +47,7 @@ public class VerificationService(
                     verificationTokenRepository.DeleteByIdAsync(token.Id),
                     accessTokenService.RevokeAllUserRefreshTokens(user.Id));
         await accessTokenService.GenerateBothTokensAndSetCookies(user);
+
         return user;
     }
 }

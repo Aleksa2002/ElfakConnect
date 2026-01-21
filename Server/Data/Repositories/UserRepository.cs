@@ -11,29 +11,40 @@ public class UserRepository(IMongoDatabase database) : IUserRepository
 {
     private readonly IMongoCollection<User> _usersCollection = database.GetCollection<User>(User.CollectionName);
 
-    public async Task<Result<User>> CreateAsync(string userName, string email, string passwordHash)
+    public async Task<Result<User>> CreateAsync(
+        string email,
+        string? username = null,
+        string? passwordHash = null,
+        string? microsoftId = null,
+        bool isVerified = false)
     {
         try
         {
             var user = new User
             {
-                Username = userName,
                 Email = email,
-                PasswordHash = passwordHash
+                Username = username,
+                PasswordHash = passwordHash,
+                MicrosoftId = microsoftId,
+                IsVerified = isVerified
             };
-
             await _usersCollection.InsertOneAsync(user);
+
             return user;
         }
         catch (MongoWriteException ex) when (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
         {
-            if (ex.Message.Contains("email"))
+            if (ex.Message.Contains("unique_email"))
             {
                 return UserErrors.EmailNotUnique(email);
             }
-            if (ex.Message.Contains("username"))
+            if (ex.Message.Contains("unique_username") && username != null)
             {
-                return UserErrors.UsernameNotUnique(userName);
+                return UserErrors.UsernameNotUnique(username);
+            }
+            if (ex.Message.Contains("unique_microsoftId") && microsoftId != null)
+            {
+                return UserErrors.MicrosoftIdNotUnique(microsoftId);
             }
             throw;
         }
@@ -50,6 +61,12 @@ public class UserRepository(IMongoDatabase database) : IUserRepository
     {
         return await _usersCollection
             .Find(u => u.Id == userId)
+            .FirstOrDefaultAsync();
+    }
+    public async Task<User?> FindByMicrosoftIdAsync(string microsoftId)
+    {
+        return await _usersCollection
+            .Find(u => u.MicrosoftId == microsoftId)
             .FirstOrDefaultAsync();
     }
 
@@ -74,6 +91,7 @@ public class UserRepository(IMongoDatabase database) : IUserRepository
         {
             return UserErrors.UserNotFound(userId.ToString());
         }
+        
         return updatedDoc;
     }
 }

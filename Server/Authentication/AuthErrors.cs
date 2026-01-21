@@ -6,17 +6,18 @@ namespace Server.Authentication;
 public static class AuthErrors
 {
     public static readonly Error InvalidCredentials =
-        Error.Unauthorized("Auth.InvalidCredentials", "The provided credentials are invalid.");
+        Error.Unauthorized(ErrorCodes.AUTH_INVALID_CREDENTIALS, "Auth.InvalidCredentials", "The provided credentials are invalid.");
+    public static readonly Error InvalidLoginMethod =
+        Error.Unauthorized(ErrorCodes.AUTH_INVALID_LOGIN_METHOD, "Auth.InvalidLoginMethod", "The login method is invalid.");
     public static readonly Error InvalidRefreshToken =
-        Error.Unauthorized("Auth.InvalidRefreshToken", "The provided refresh token is invalid.");
+        Error.Unauthorized(ErrorCodes.AUTH_EXPIRED, "Auth.InvalidRefreshToken", "The refresh token is invalid.");
     public static readonly Error MissingRefreshToken =
-        Error.Unauthorized("Auth.MissingRefreshToken", "The refresh token is missing.");
+        Error.Unauthorized(ErrorCodes.AUTH_EXPIRED, "Auth.MissingRefreshToken", "The refresh token is missing.");
     public static readonly Error ExpiredRefreshToken =
-        Error.Unauthorized("Auth.ExpiredRefreshToken", "The refresh token has expired.");
-    public static readonly Error InvalidAccessToken =
-        Error.Unauthorized("Auth.InvalidAccessToken", "The access token is invalid.");
+        Error.Unauthorized(ErrorCodes.AUTH_EXPIRED, "Auth.ExpiredRefreshToken", "The refresh token has expired.");
     public static readonly Error InvalidVerificationCode =
-        Error.Validation("Auth.InvalidVerificationCode", "The verification code is invalid.");
+        Error.Validation(ErrorCodes.VAL_FAILED, "Auth.InvalidVerificationCode", "The verification code is invalid.");
     public static readonly Error ExpiredVerificationCode =
-        Error.Validation("Auth.ExpiredVerificationCode", "The verification code has expired.");
+        Error.Validation(ErrorCodes.VAL_FAILED, "Auth.ExpiredVerificationCode", "The verification code has expired.");
 }
+

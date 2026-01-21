@@ -22,6 +22,7 @@ public class RefreshTokenRepository(IMongoDatabase database) : IRefreshTokenRepo
             TokenHash = Convert.ToBase64String(hash)
         };
         await refreshTokenCollection.InsertOneAsync(refreshToken);
+        
         return refreshToken;
     }
 

@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Users/" />
+    <Folder Include="Users/Endpoints/" />
   </ItemGroup>
 
 </Project>

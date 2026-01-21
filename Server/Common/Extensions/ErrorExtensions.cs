@@ -7,39 +7,21 @@ public static class ErrorExtensions
 {
     public static ProblemDetails ToProblemDetails(this Error error)
     {
-
         return new ProblemDetails
         {
-            Type = GetType(error.Type),
-            Title = GetTitle(error.Type),
-            Status = GetStatus(error.Type),
-            Detail = error.Description,
+            Type = GetType(error.Status),
+            Title = error.Title,
+            Status = error.Status,
+            Detail = error.Message,
             Extensions =
-            { ["code"] = error.Code }
-        };
-        
+            { ["errorCode"] = error.Code }
+        };  
     }
-    private static int GetStatus(ErrorType errorType) => errorType switch
+    private static string GetType(int status) => status switch
     {
-        ErrorType.NotFound => StatusCodes.Status404NotFound,
-        ErrorType.Conflict => StatusCodes.Status409Conflict,
-        ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-        _ => StatusCodes.Status500InternalServerError,
-    };
-
-    private static string GetType(ErrorType errorType) => errorType switch
-    {
-        ErrorType.NotFound => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5",
-        ErrorType.Conflict => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.10",
-        ErrorType.Unauthorized => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.2",
+        StatusCodes.Status404NotFound => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5",
+        StatusCodes.Status409Conflict => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.10",
+        StatusCodes.Status401Unauthorized => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.2",
         _ => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.6.1",
-    };
-
-    private static string GetTitle(ErrorType errorType) => errorType switch
-    {
-        ErrorType.NotFound => "Resource Not Found",
-        ErrorType.Conflict => "Conflict Occurred",
-        ErrorType.Unauthorized => "Unauthorized Access",
-        _ => "Internal Server Error",
     };
 }
